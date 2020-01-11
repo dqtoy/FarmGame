@@ -7,6 +7,7 @@ public class GameUIManager : MonoSingleton<GameUIManager>
 {
     private GameObject m_uiRoot;
     private Camera m_uiCamera;
+    public Camera UICamera { get => m_uiCamera; }
     private Dictionary<Type, ScreenBase> m_UIs = new Dictionary<Type, ScreenBase>();
 
     protected override void Init()
@@ -58,9 +59,9 @@ public class GameUIManager : MonoSingleton<GameUIManager>
 
     public void RemoveUI(ScreenBase sBase)
     {
-        if(m_UIs.ContainsKey(sBase.GetType()))
+        if (m_UIs.ContainsKey(sBase.GetType()))
             m_UIs.Remove(sBase.GetType());
-        
+
         sBase.Dispose();
     }
 
