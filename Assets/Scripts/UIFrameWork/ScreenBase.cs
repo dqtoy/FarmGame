@@ -16,21 +16,34 @@ public class ScreenBase
     {
         uiBaseName = uiName;
         // param ??
-        
+
         // load ui
         ResourceManager.GetInstance().LoadAsset(uiName, OnLoadComplete);
     }
 
-    public void OnLoadComplete(GameObject go)
+    protected void OnLoadComplete(GameObject go)
     {
         panelRoot = GameObject.Instantiate(go, GameUIManager.GetInstance().GetUIParent());
-        // panelRoot.name = panelRoot.name.Replace("(Clone)","");
+        ctrlBase = panelRoot.GetComponent<UICtrlBase>();
 
         OnLoadSuccess();
+
+        // 添加到控制层
+        GameUIManager.GetInstance().AddUI(this);
     }
 
-    public void OnLoadSuccess()
+    protected virtual void OnLoadSuccess()
     {
 
+    }
+
+    public virtual void Close()
+    {
+        GameUIManager.GetInstance().RemoveUI(this);
+    }
+
+    public virtual void Dispose()
+    {
+        GameObject.Destroy(panelRoot);
     }
 }
