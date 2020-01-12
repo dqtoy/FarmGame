@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class UICtrlBase : MonoBehaviour
+public class UICtrlBase : UIFEventAutoRelease
 {
     [HideInInspector]
     public Canvas m_ctrlCanvas;
