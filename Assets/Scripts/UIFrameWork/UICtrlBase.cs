@@ -1,5 +1,10 @@
 ﻿using UnityEngine;
-
+public enum ENScreenPriority
+{
+    Default = 0,
+    PanelLayer = 10,
+    PopLayer = 15,
+}
 public class UICtrlBase : UIFEventAutoRelease
 {
     [HideInInspector]

@@ -5,4 +5,6 @@ using UnityEngine;
 public static class UIConst
 {
     public static string uiLogo = "UILogo";
+    public static string uiStartUp = "UIStartUp";
+
 }
