@@ -6,6 +6,7 @@ using UnityEngine;
 public class GameUIManager : MonoSingleton<GameUIManager>
 {
     private GameObject m_uiRoot;
+    public int m_uiOpenOrder = 0;
     private Camera m_uiCamera;
     public Camera UICamera { get => m_uiCamera; }
     private Dictionary<Type, ScreenBase> m_UIs = new Dictionary<Type, ScreenBase>();
@@ -29,15 +30,23 @@ public class GameUIManager : MonoSingleton<GameUIManager>
 
     public ScreenBase OpenUI(Type uiName)
     {
+        m_uiOpenOrder++;
+
         ScreenBase sb = GetUI(uiName);
         if (null != sb)
         {
+            if(null != null && !sb.ctrlBase.m_ctrlCanvas.enabled)
+            {
+                sb.ctrlBase.m_ctrlCanvas.enabled = true;
+            }
             return sb;
         }
 
         sb = Activator.CreateInstance(uiName) as ScreenBase;
-
+        
         m_UIs.Add(uiName, sb);
+        sb.SetOpenOrder(m_uiOpenOrder);
+
         return sb;
     }
 
