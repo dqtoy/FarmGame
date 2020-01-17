@@ -14,6 +14,7 @@ public class GameUIManager : MonoSingleton<GameUIManager>
     protected override void Init()
     {
         m_uiRoot = Instantiate(Resources.Load("UIRoot"), transform) as GameObject;
+        m_uiRoot.transform.SetParent(transform);
         m_uiCamera = m_uiRoot.GetComponent<Canvas>().worldCamera;
     }
 
@@ -25,7 +26,7 @@ public class GameUIManager : MonoSingleton<GameUIManager>
         sBase.panelRoot.transform.localPosition = Vector3.zero;
         sBase.panelRoot.transform.localScale = Vector3.one;
 
-        sBase.panelRoot.name = sBase.panelRoot.name.Replace("(Clone)", "");
+        sBase.panelRoot.name = sBase.panelRoot.name.Replace("(Clone)", "");   
     }
 
     public ScreenBase OpenUI(Type uiName)
@@ -35,7 +36,7 @@ public class GameUIManager : MonoSingleton<GameUIManager>
         ScreenBase sb = GetUI(uiName);
         if (null != sb)
         {
-            if(null != null && !sb.ctrlBase.m_ctrlCanvas.enabled)
+            if (null != null && !sb.ctrlBase.m_ctrlCanvas.enabled)
             {
                 sb.ctrlBase.m_ctrlCanvas.enabled = true;
             }
@@ -43,7 +44,7 @@ public class GameUIManager : MonoSingleton<GameUIManager>
         }
 
         sb = Activator.CreateInstance(uiName) as ScreenBase;
-        
+
         m_UIs.Add(uiName, sb);
         sb.SetOpenOrder(m_uiOpenOrder);
 
