@@ -1,10 +1,10 @@
-﻿
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using Newtonsoft.Json;
 
 public static class BuildBundle
 {
@@ -39,15 +39,19 @@ public static class BuildBundle
         RemoveAllBundleNames();
         SetAllBundleNames();
 
-        // AssetBundleBuild[] results = CollectBundleBuilds();
         AssetBundleManifest manifast = BuildPipeline.BuildAssetBundles(outputPath, BuildAssetBundleOptions.DeterministicAssetBundle,
             BuildTarget.StandaloneOSX);
 
+        RemoveAllBundleNames();
+
+        // 为了解包
+        CreateAssetBundleSummary();
+
     }
 
-    private static AssetBundleBuild[] CollectBundleBuilds()
+    private static void CreateAssetBundleSummary()
     {
-        return null;
+        
     }
 
     private static void SetBundleName(string path, string bundleName)
@@ -61,12 +65,35 @@ public static class BuildBundle
         {
             importer.assetBundleName = bundleName;
         }
-
     }
 
-    private static void SetDepBundleName(List<string> deps, string bundleName)
+    private static void SetDepBundleName(List<string> deps, string bundleName, BuildBundleCollection collection)
     {
+        Dictionary<string, int> originals = new Dictionary<string, int>();
+        for (int i = 0; i < deps.Count; i++)
+        {
+            string depBundleName = "";
+            if (!depBundleCaches.TryGetValue(deps[i], out depBundleName))
+            {
+                depBundleCaches.Add(deps[i], bundleName);
+                continue;
+            }
+            else if (bundleName == depBundleName)
+            {
+                continue;
+            }
 
+            int index;
+            if (!originals.TryGetValue(deps[i], out index))
+            {
+                index = originals.Count;
+                originals.Add(deps[i], index);
+            }
+
+            string sharedName = bundleName + "_shared_" + index;
+            depBundleCaches[deps[i]] = sharedName;
+            collection.bundleNames.Add(sharedName.ToLower());
+        }
     }
 
     private static string TryParseBundleName(string main, BuildBundleCollection collection)
@@ -99,24 +126,45 @@ public static class BuildBundle
         return bundleName;
     }
 
-    private static List<string> CollectDependenciesPaths(string main)
+    private static List<string> CollectDependenciesPaths(string main, BuildBundleCollection collection)
     {
         string[] dependencies = AssetDatabase.GetDependencies(main, true);
-        if(dependencies.Length < 1)
+        if (dependencies.Length < 1)
         { // 没依赖项
             return new List<string>();
         }
-        
+
         List<string> assets = new List<string>();
         foreach (string asset in dependencies)
         {
-            if(main == asset || Path.GetExtension(asset) == ".cs" || Path.GetExtension(asset) == ".dll")
+            if (main == asset || Path.GetExtension(asset) == ".cs" || Path.GetExtension(asset) == ".dll")
             {
                 continue;
             }
 
-            
+            BuildBundleCollection result = collections.FindLast((c) =>
+            {
+                return c.mainPaths.Contains(asset) || c.deps.Contains(asset);
+            });
+
+            if (null == result || result == collection)
+            {
+                assets.Add(asset);
+                continue;
+            }
+
+            if (result.config.order < collection.config.order)
+            {
+                continue;
+            }
+
+            if (result.config.order >= collection.config.order)
+            {
+                throw new System.Exception($"{collection.config.bundleName}不能依赖{result.config.bundleName}!");
+            }
         }
+
+        // assets.Sort((left, right));
 
         return assets;
     }
@@ -158,14 +206,23 @@ public static class BuildBundle
         {
             foreach (string main in c.mainPaths)
             {
-                List<string> deps = CollectDependenciesPaths(main);
+                List<string> deps = CollectDependenciesPaths(main, c);
                 foreach (string dep in deps)
                 {
-                    c.deps.Add(dep); // ?? 有什么用 
+                    c.deps.Add(dep);
                 }
-                SetDepBundleName(deps, TryParseBundleName(main, c));
+                SetDepBundleName(deps, TryParseBundleName(main, c), c);
             }
         }
+
+        // 设置依赖项的包名
+        foreach(KeyValuePair<string, string> e in depBundleCaches)
+        {
+            SetBundleName(e.Key, e.Value);
+        }
+        
+        // 清除没用的包名
+        AssetDatabase.RemoveUnusedAssetBundleNames();
     }
 
     private static void RemoveAllBundleNames()

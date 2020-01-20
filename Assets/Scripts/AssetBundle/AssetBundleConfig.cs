@@ -24,6 +24,7 @@ public class AssetBundleConfigItem
     public string bundleName;
     public string filter;
     public ENBuildType buildType;
+    public int order;
     public Object[] assets;
 
     public HashSet<string> GetOriginalPaths()
