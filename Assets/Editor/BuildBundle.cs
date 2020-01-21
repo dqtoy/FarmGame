@@ -10,12 +10,11 @@ public static class BuildBundle
 {
     private class BuildBundleCollection
     {
-        public HashSet<string> originalPaths;
-        public List<string> mainPaths;
-        public List<string> bundleNames;
-        public HashSet<string> deps;
+        public HashSet<string> originalPaths = new HashSet<string>();
+        public List<string> mainPaths = new List<string>();
+        public List<string> bundleNames = new List<string>();
+        public HashSet<string> deps = new HashSet<string>();
         public AssetBundleConfigItem config;
-
     }
 
     public static string outputPath = $"{Application.dataPath}/../FarmGameAssetBundle";
@@ -51,20 +50,29 @@ public static class BuildBundle
 
     private static void CreateAssetBundleSummary()
     {
-        
+
     }
 
     private static void SetBundleName(string path, string bundleName)
     {
+        // 跳过 Resourcesa 文件夹里的资源
+        if (path.Contains("/Resources/"))
+        {
+            return;
+        }
+
         AssetImporter importer = AssetImporter.GetAtPath(path);
         if (!string.IsNullOrEmpty(importer.assetBundleName) && importer.assetBundleName != bundleName)
         {
-            // error
+            throw new System.Exception(string.Format("[AssetBundle] Set [{0}] asset bundle name: [{1}]. But it already have: [{2}]",
+                            path, bundleName, importer.assetBundleName));
         }
         else
         {
             importer.assetBundleName = bundleName;
         }
+
+        // unity_builtin_extra
     }
 
     private static void SetDepBundleName(List<string> deps, string bundleName, BuildBundleCollection collection)
@@ -90,7 +98,7 @@ public static class BuildBundle
                 originals.Add(deps[i], index);
             }
 
-            string sharedName = bundleName + "_shared_" + index;
+            string sharedName = bundleName + "_shared_" + index; // 相同索引的存到一个包里
             depBundleCaches[deps[i]] = sharedName;
             collection.bundleNames.Add(sharedName.ToLower());
         }
@@ -99,12 +107,12 @@ public static class BuildBundle
     private static string TryParseBundleName(string main, BuildBundleCollection collection)
     {
         string bundleName = "";
-        if (collection.config.buildType == ENBuildType.enAllInOne)
-        {
+        if (collection.config.buildType == ENBuildType.AllInOne)
+        { // 直接使用指定包名
             bundleName = collection.config.bundleName;
         }
-        else if (collection.config.buildType == ENBuildType.enByFolder)
-        {
+        else if (collection.config.buildType == ENBuildType.ByFolder)
+        { // 获取文件夹名
             string folderName = Path.GetDirectoryName(main);
             if (collection.originalPaths.Contains(folderName) || collection.originalPaths.Contains(main))
             {
@@ -112,11 +120,11 @@ public static class BuildBundle
             }
             bundleName = folderName.Replace("Assets/", "");
         }
-        else if (collection.config.buildType == ENBuildType.enByGroups)
+        else if (collection.config.buildType == ENBuildType.ByGroups)
         {
 
         }
-        else if (collection.config.buildType == ENBuildType.enOneByOne)
+        else if (collection.config.buildType == ENBuildType.OneByOne)
         {
             bundleName = Path.ChangeExtension(main, null).Replace("Assets/", null);
         }
@@ -201,7 +209,7 @@ public static class BuildBundle
         }
 
         // 处理依赖项
-        depBundleCaches = new Dictionary<string, string>();//<资源路径，包名>
+        depBundleCaches = new Dictionary<string, string>(); // <资源路径，包名>
         foreach (BuildBundleCollection c in collections)
         {
             foreach (string main in c.mainPaths)
@@ -216,11 +224,11 @@ public static class BuildBundle
         }
 
         // 设置依赖项的包名
-        foreach(KeyValuePair<string, string> e in depBundleCaches)
+        foreach (KeyValuePair<string, string> e in depBundleCaches)
         {
             SetBundleName(e.Key, e.Value);
         }
-        
+
         // 清除没用的包名
         AssetDatabase.RemoveUnusedAssetBundleNames();
     }

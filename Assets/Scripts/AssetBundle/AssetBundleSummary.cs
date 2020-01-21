@@ -8,7 +8,8 @@ public class AssetBundleSummary
     
 }
 
-public class AssetBundleInfo
+// 存到服务端中的结构
+public class AssetBundleSummaryDownload
 {
 
 }

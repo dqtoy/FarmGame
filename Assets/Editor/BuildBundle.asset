@@ -15,5 +15,8 @@ MonoBehaviour:
   bundles:
   - bundleName: Atlas
     filter: t:spriteatlas
+    buildType: 2
+    order: 0
+    group: 0
     assets:
-    - {fileID: 102900000, guid: 822a3bb666531448087863a773bf1f1e, type: 3}
+    - {fileID: 102900000, guid: d6fc731f82fe44c419c85a83b1331056, type: 3}
