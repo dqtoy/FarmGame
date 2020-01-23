@@ -9,6 +9,7 @@ public class DemoStart : MonoBehaviour
         // GameUIManager.GetInstance().OpenUI(typeof(UILogoScreen));
         
         // TODO: hotfix
-        GameUIManager.GetInstance().OpenUI(typeof(UIStartUpScreen));
+        // GameUIManager.GetInstance().OpenUI(typeof(UIStartUpScreen));
+        GameUIManager.GetInstance().OpenUI(typeof(MainMenuScreen));
     }
 }

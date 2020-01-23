@@ -3,8 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum ENUIType
+{
+    None,
+    Main,
+    UI,
+}
 public class GameUIManager : MonoSingleton<GameUIManager>
 {
+    // private GameObject m_gameMain; // 挂背景
+    // private ScreenBase m_curMain;
+
     private GameObject m_uiRoot;
     public int m_uiOpenOrder = 0;
     private Camera m_uiCamera;
@@ -13,10 +22,25 @@ public class GameUIManager : MonoSingleton<GameUIManager>
 
     protected override void Init()
     {
+        //     m_gameMain = Instantiate(Resources.Load("GameMain"), transform) as GameObject;
+        //     m_gameMain.transform.SetParent(transform);
+
         m_uiRoot = Instantiate(Resources.Load("UIRoot"), transform) as GameObject;
         m_uiRoot.transform.SetParent(transform);
+
         m_uiCamera = m_uiRoot.GetComponent<Canvas>().worldCamera;
     }
+
+    // public void AddMain(ScreenBase sBase)
+    // {
+    //     sBase.panelRoot.transform.SetParent(GetMainParent());
+    //     sBase.panelRoot.name = sBase.panelRoot.name.Replace("(Clone)", "");
+    // }
+
+    // public void OpenMain()
+    // {
+
+    // }
 
     // 只是把UI挂到GameManager上
     public void AddUI(ScreenBase sBase)
@@ -26,24 +50,24 @@ public class GameUIManager : MonoSingleton<GameUIManager>
         sBase.panelRoot.transform.localPosition = Vector3.zero;
         sBase.panelRoot.transform.localScale = Vector3.one;
 
-        sBase.panelRoot.name = sBase.panelRoot.name.Replace("(Clone)", "");   
+        sBase.panelRoot.name = sBase.panelRoot.name.Replace("(Clone)", "");
     }
 
-    public ScreenBase OpenUI(Type uiName)
+    public ScreenBase OpenUI(Type uiName, OpenScreenParameterBase param = null)
     {
         m_uiOpenOrder++;
 
         ScreenBase sb = GetUI(uiName);
         if (null != sb)
         {
-            if (null != null && !sb.ctrlBase.m_ctrlCanvas.enabled)
+            if (null != sb.ctrlBase && !sb.ctrlBase.m_ctrlCanvas.enabled)
             {
                 sb.ctrlBase.m_ctrlCanvas.enabled = true;
             }
             return sb;
         }
 
-        sb = Activator.CreateInstance(uiName) as ScreenBase;
+        sb = Activator.CreateInstance(uiName, param) as ScreenBase;
 
         m_UIs.Add(uiName, sb);
         sb.SetOpenOrder(m_uiOpenOrder);
@@ -79,4 +103,9 @@ public class GameUIManager : MonoSingleton<GameUIManager>
     {
         return transform;
     }
+
+    // public Transform GetMainParent()
+    // {
+    //     return m_gameMain.transform;
+    // }
 }

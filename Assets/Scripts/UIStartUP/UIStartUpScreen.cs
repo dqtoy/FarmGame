@@ -8,14 +8,17 @@ public class UIStartUpScreen : ScreenBase
 
     public UIStartUpScreen() : base(UIConst.uiStartUp)
     {
-        
+    }
+
+    protected override void StartLoad(string uiName)
+    {
+        uiType = startUpCtrl.m_uiType;
     }
 
     protected override void OnLoadSuccess()
     {
         base.OnLoadSuccess();
         startUpCtrl = ctrlBase as UIStartUpCtrl;
-
         
-    }
+    }   
 }

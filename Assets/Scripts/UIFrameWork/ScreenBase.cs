@@ -4,19 +4,24 @@ public class ScreenBase
 {
     public GameObject panelRoot = null;
     public UICtrlBase ctrlBase = null;
-    public int uiOpenOrder = 0;//界面打开顺序
+    public int uiOpenOrder = 0; // 界面打开顺序
     public int sortingLayer = 0;
+    protected ENUIType uiType = ENUIType.Main;
+    protected OpenScreenParameterBase param = null;
     private string uiBaseName = string.Empty;
-    public ScreenBase(string uiName)
+    public ScreenBase(string uiName, OpenScreenParameterBase sParam = null)
     {
-        StartLoad(uiName);
+        StartLoad(uiName, sParam);
     }
 
-    public virtual void StartLoad(string uiName)
+    protected virtual void StartLoad(string uiName, OpenScreenParameterBase sParam)
     {
         uiBaseName = uiName;
         // param ??
-
+        if(null != param)
+        {
+            uiType = 
+        }
         // load ui
         ResourceManager.GetInstance().LoadAsset(uiName, OnLoadComplete);
     }
@@ -39,7 +44,7 @@ public class ScreenBase
     public void SetOpenOrder(int order)
     {
         uiOpenOrder = order;
-        if(null != ctrlBase && null != ctrlBase.m_ctrlCanvas)
+        if (null != ctrlBase && null != ctrlBase.m_ctrlCanvas)
         {
             ctrlBase.m_ctrlCanvas.sortingOrder = uiOpenOrder;
         }
@@ -50,7 +55,10 @@ public class ScreenBase
         panelRoot = GameObject.Instantiate(go, GameUIManager.GetInstance().GetUIParent());
         ctrlBase = panelRoot.GetComponent<UICtrlBase>();
 
-        UpdateLayoutLevel();
+        if (uiType == ENUIType.UI)
+        { // 普通UI时更新层级
+            UpdateLayoutLevel();
+        }
 
         OnLoadSuccess();
 
@@ -61,7 +69,7 @@ public class ScreenBase
     private void UpdateLayoutLevel()
     {
         var camera = GameUIManager.GetInstance().UICamera;
-        if(null != camera)
+        if (null != camera)
         {
             ctrlBase.m_ctrlCanvas.worldCamera = camera;
         }
@@ -71,5 +79,5 @@ public class ScreenBase
         ctrlBase.m_ctrlCanvas.sortingLayerID = (int)ctrlBase.m_screenPriority;
         // ctrlBase.m_ctrlCanvas.sortingOrder = uiOpenOrder;
     }
-    
+
 }
